@@ -1,0 +1,12 @@
+*.o
+*.exe
+*.out
+*.gch
+*.html
+*.css
+*.js
+*.json
+*.png
+*.svg
+*.md5
+*.map
