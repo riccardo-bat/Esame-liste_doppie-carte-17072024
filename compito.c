@@ -10,7 +10,7 @@ long int int_input(char* msg, int minimum_value, int max_value);
 lista load_deck_from_file(char* filename, int cartePerPlayer);
 void pesca(lista* deck_user, int v, char s);
 void stampa(lista deck_user1, lista deck_user2);
-
+int* tris(lista carte);
 
 int main(){
     //int numero_giocatori = 2;
@@ -25,6 +25,17 @@ int main(){
 
     //punto 2a
     printf("\n\n--------------\n");
+    int dimensione = 13;
+    int* array_tris_user1 = tris(deck_user1);
+    int* array_tris_user2 = tris(deck_user2);
+
+    printf("\nGiocatore 1: "); 
+    for(int i=0; i<dimensione; i++)
+        printf(" %d", array_tris_user1[i]);
+
+    printf("\nGiocatore 2: "); 
+    for(int i=0; i<dimensione; i++)
+        printf(" %d", array_tris_user2[i]);
 
 
     printf("\n\n");
@@ -133,9 +144,9 @@ void stampa(lista deck_user1, lista deck_user2){
 
         //comparo le carte
         int cmp = compare(deck_user1->inf, deck_user2->inf);
-        if(cmp < 0) printf("e' minore a ");
-        else if(cmp > 0) printf("e' maggiore a ");
-        else printf("e' uguale a ");
+        if(cmp < 0) printf(" e' minore a ");
+        else if(cmp > 0) printf(" e' maggiore a ");
+        else printf(" e' uguale a ");
 
         //stampo la carta 2
         print(deck_user2->inf);
@@ -146,7 +157,30 @@ void stampa(lista deck_user1, lista deck_user2){
 
 }
 
+/**
+ * @brief Funzione che restituisce un vettore dinamico in cui v[i] = 1 se fa parte di un tris per valore
+ * 
+ * @param carte 
+ * @return int* 
+ */
+int* tris(lista carte){
+    int dimensione = 13;
+    int* contaOccorrenze = calloc(dimensione, sizeof(int));
 
+    if(carte == NULL) return contaOccorrenze;
+
+    //conto quante volte appare quel numero
+    while(carte != NULL){
+        contaOccorrenze[carte->inf.valore - 1]++;
+        carte = carte->pun;
+    }
+
+    //se #occorrenze è <3, la divisione intera per 3 dà 0
+    for(int i=0; i<dimensione; i++)
+        contaOccorrenze[i] = contaOccorrenze[i]/3;
+
+    return contaOccorrenze;
+}
 
 
 
