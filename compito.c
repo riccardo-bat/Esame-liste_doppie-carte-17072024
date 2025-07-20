@@ -7,10 +7,12 @@
 
 //prototipi 
 long int int_input(char* msg, int minimum_value, int max_value);
+char* string_input(char* msg, int max_length);
 lista load_deck_from_file(char* filename, int cartePerPlayer);
 void pesca(lista* deck_user, int v, char s);
 void stampa(lista deck_user1, lista deck_user2);
 int* tris(lista carte);
+int cala(lista* carte);
 
 int main(){
     //int numero_giocatori = 2;
@@ -38,6 +40,48 @@ int main(){
         printf(" %d", array_tris_user2[i]);
 
 
+    //punto 2b
+    printf("\n\n--------------\n");
+    //ogni giocatore pesca una carta
+    printf("\n\nPESCAGGIO GIOCATORE 1...");  
+    pesca(&deck_user1, (int) int_input("\nValore della carta: ", 1, 13), string_input("\nSeme della carta: ", 2)[0]); 
+    printf("\n\nPESCAGGIO GIOCATORE 2..."); 
+    pesca(&deck_user2, (int) int_input("\nValore della carta: ", 1, 13), string_input("\nSeme della carta: ", 1)[0]); 
+
+    //punteggi totali
+    printf("\nGiocatore 1 cala: ");
+    int punteggio_user1 = 0;
+    int res;
+    do{
+        res = cala(&deck_user1);
+        punteggio_user1 += res;
+    }while(res != 0);
+    printf(". Punteggio totale: %d", punteggio_user1);
+
+    printf("\nGiocatore 2 cala: ");
+    int punteggio_user2 = 0;
+    do{
+        res = cala(&deck_user2);
+        punteggio_user2 += res;
+    }while(res != 0);
+    printf(". Punteggio totale: %d", punteggio_user2);
+
+    //verifico se uno dei due giocatori ha terminato le carte, ed in caso stampando il vincitore
+    if(deck_user1 == NULL || deck_user2 == NULL){
+        if(punteggio_user1 > punteggio_user2) printf("\n\nIL GIOCATORE 1 HA VINTO");
+        else if(punteggio_user2 > punteggio_user1) printf("\n\nIL GIOCATORE 1 HA VINTO");
+        //else --> non stampo nulla, non ha vinto nessuno
+    }
+
+    //else --> non ha vinto nessuno
+
+
+
+
+    //libero la memoria allocata
+    free(array_tris_user1);
+    free(array_tris_user2);
+
     printf("\n\n");
     return 0;
 }
@@ -59,6 +103,24 @@ long int int_input(char* msg, int minimum_value, int max_value){
     }
 
     return input;
+}
+
+char* string_input(char* msg, int max_length){
+    printf("%s", msg); 
+    char* buffer = malloc(max_length * sizeof(char));
+    if(!buffer){printf("\n\nMalloc failed"); exit(EXIT_FAILURE);} 
+
+    while(fgets(buffer, (max_length+1), stdin) == NULL){
+        printf("\nInput fallito\n");
+    }
+
+    buffer[strcspn(buffer, "\r\n")] = '\0';
+    //svuoto il buffer
+    int c;
+    while ((c = getchar()) != '\n' && c != EOF)
+        ;
+
+    return buffer;
 }
 
 /**
@@ -158,7 +220,7 @@ void stampa(lista deck_user1, lista deck_user2){
 }
 
 /**
- * @brief Funzione che restituisce un vettore dinamico in cui v[i] = 1 se fa parte di un tris per valore
+ * @brief Funzione che restituisce un vettore dinamico in cui v[i] = 1 se fa parte di un tris per valore. la dimensione è pari a 13
  * 
  * @param carte 
  * @return int* 
@@ -183,7 +245,47 @@ int* tris(lista carte){
 }
 
 
+/**
+ * @brief Funzione che cala un tris di carte presenti in un mazzo, restituendo il punteggio finale ottenuto dal giocatore dopo aaver calatato tutti i tris
+ * 
+ */
+int cala(lista* carte){
+    lista tmp_deck = *carte; 
+    int punteggioTotale = 0;
 
+    int* trisDisponibili = tris(tmp_deck);
+    //verifico se è presente almeno un tris
+    int carteDaButtare = 0;
+    int daCalare = 0;
 
+    for(int i=0; i<13 && carteDaButtare == 0; i++){
+        if(trisDisponibili[i] != 0){
+            carteDaButtare = trisDisponibili[i]*3; 
+            daCalare = i+1; //valore da calare
+        }
+    }
+
+    if(carteDaButtare == 0) return punteggioTotale;
+
+    //se è presente almeno un tris di un determinato valore, lo calo
+    //scorro la lista per calare un tris di daCalare
+    lista cursor = tmp_deck;
+    while(cursor != NULL && carteDaButtare > 0){
+        if(head(cursor).valore == daCalare){ //se posso calare una carta appartenente ad un tris...
+            print(head(cursor));
+            printf(" ");
+            carteDaButtare--; //scalo il #carte da buttare
+            lista to_delete = cursor; //creo un nodo per non eliminare direttamente cursor
+            tmp_deck = delete_elem(tmp_deck, to_delete); //elimino la carta dal mazzo
+            punteggioTotale += daCalare; //incremento il punteggio totale del giocatore
+        }
+
+        cursor = tail(cursor);
+    }
+    
+
+    *carte = tmp_deck;
+    return punteggioTotale;
+}
 
 
